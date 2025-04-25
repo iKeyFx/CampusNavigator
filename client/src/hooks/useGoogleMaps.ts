@@ -1,9 +1,16 @@
 import { useState, useEffect } from "react";
 
+// Declare google type to fix TypeScript errors
+declare global {
+  interface Window {
+    google: any;
+  }
+}
+
 // In Vite, we use import.meta.env instead of process.env
 // For this example, we'll use a placeholder that should be replaced with an actual API key
 const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "YOUR_API_KEY";
-const GOOGLE_MAPS_URL = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}&libraries=places,directions&v=weekly`;
+const GOOGLE_MAPS_URL = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}&libraries=places&v=weekly`;
 
 // Helper function to load scripts
 const loadScript = (src: string): Promise<void> => {

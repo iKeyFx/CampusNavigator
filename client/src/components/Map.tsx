@@ -164,8 +164,22 @@ const Map: React.FC<MapProps> = ({
         
         {loadError && (
           <div className="w-full h-full flex items-center justify-center bg-gray-100">
-            <div className="text-xl text-red-500">
-              Error loading Google Maps. Please check your internet connection and refresh the page.
+            <div className="max-w-md text-center p-8">
+              <div className="text-2xl text-red-500 mb-4">
+                <i className="fas fa-exclamation-triangle text-4xl mb-4 block"></i>
+                Map Loading Error
+              </div>
+              <p className="text-gray-700 mb-4">
+                We're having trouble loading Google Maps. This may be due to:
+              </p>
+              <ul className="text-left text-gray-600 mb-4 space-y-2">
+                <li><i className="fas fa-check-circle text-primary mr-2"></i> Billing not being enabled for this API key</li>
+                <li><i className="fas fa-check-circle text-primary mr-2"></i> API restrictions on the Google Cloud Console</li>
+                <li><i className="fas fa-check-circle text-primary mr-2"></i> Network connectivity issues</li>
+              </ul>
+              <p className="text-gray-700">
+                Please check your Google Cloud Console settings to ensure Maps JavaScript API is enabled and billing is properly configured.
+              </p>
             </div>
           </div>
         )}
