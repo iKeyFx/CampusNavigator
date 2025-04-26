@@ -58,6 +58,46 @@
   }
 }
 
+
+
+
+.hero {
+  background: linear-gradient(
+    hsl(263, 70%, 45%, 0.85), 
+    hsl(263, 70%, 45%, 0.9)
+  ), url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80');
+  background-size: cover;
+  background-position: center;
+}
+
+.map-container {
+  height: calc(100vh - 4rem);
+  width: 100%;
+  z-index: 10;
+}
+
+.pulse {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 hsla(263, 70%, 50%, 0.7);
+  }
+  
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 10px hsla(263, 70%, 50%, 0);
+  }
+  
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 hsla(263, 70%, 50%, 0);
+  }
+}
+
+
 .map-container {
   height: calc(100vh - 64px);
 }

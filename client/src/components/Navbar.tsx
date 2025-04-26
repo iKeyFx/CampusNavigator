@@ -1,3 +1,4 @@
+import { MapPin } from "lucide-react";
 import { Link } from "wouter";
 
 const Navbar = () => {
@@ -7,10 +8,10 @@ const Navbar = () => {
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <Link href="/" className="flex-shrink-0 flex items-center">
-              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold">
-                FUT
-              </div>
-              <span className="ml-2 font-semibold text-gray-900">FUTMINNA Navigator</span>
+            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold">
+               <MapPin size={20} />
+           </div>
+              <span className="ml-1 font-bold text-gray-900 text-xl">Campus Navigator</span>
             </Link>
           </div>
           <div className="flex items-center">

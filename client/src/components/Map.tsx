@@ -48,10 +48,9 @@ const Map: React.FC<MapProps> = ({
 }) => {
   // Center coordinates for each campus
   const campusCoordinates = {
-    'gidan-kwano': [9.5236, 6.4500] as [number, number], // Gidan Kwano campus coordinates
-    'bosso': [9.6766, 6.5464] as [number, number]  // Bosso campus coordinates
+    'gidan-kwano': [9.53325, 6.44691] as [number, number], // Gidan Kwano campus coordinates
+    'bosso': [9.654821, 6.525493] as [number, number]  // Bosso campus coordinates
   };
-
   // Create a basic straight-line route for demonstration
   const routePoints = (fromLocation && toLocation) ? [
     [fromLocation.lat, fromLocation.lng], 

@@ -1,3 +1,5 @@
+import { MapPin } from "lucide-react";
+
 const Footer = () => {
   return (
     <footer className="bg-gray-800 text-white py-8">
@@ -5,10 +7,10 @@ const Footer = () => {
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div className="mb-4 md:mb-0">
             <div className="flex items-center">
-              <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-primary font-bold">
-                FUT
+            <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-primary font-bold">
+                <MapPin size={20} />
               </div>
-              <span className="ml-2 font-semibold">FUTMINNA Navigator</span>
+              <span className="ml-2 font-semibold">Campus Navigator</span>
             </div>
             <p className="text-sm text-gray-400 mt-2">© {new Date().getFullYear()} Federal University of Technology, Minna</p>
           </div>
