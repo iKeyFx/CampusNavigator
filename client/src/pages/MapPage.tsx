@@ -18,7 +18,7 @@ const MapPage = () => {
     <div className="min-h-screen flex flex-col">
       <MapNavbar />
       
-      <div className="flex-grow flex flex-col md:flex-row">
+      <div className="flex-grow flex flex-col md:flex-row h-[calc(100vh-60px)]">
         <Sidebar 
           activeTab={activeTab}
           setActiveTab={setActiveTab}
@@ -36,17 +36,19 @@ const MapPage = () => {
           setActiveCampus={setActiveCampus}
         />
         
-        <Map 
-          selectedLocation={selectedLocation}
-          setSelectedLocation={setSelectedLocation}
-          fromLocation={fromLocation}
-          setFromLocation={setFromLocation}
-          toLocation={toLocation}
-          setToLocation={setToLocation}
-          showRoute={showRoute}
-          travelMode={travelMode}
-          activeCampus={activeCampus}
-        />
+        <div className="flex-grow h-full">
+          <Map 
+            selectedLocation={selectedLocation}
+            setSelectedLocation={setSelectedLocation}
+            fromLocation={fromLocation}
+            setFromLocation={setFromLocation}
+            toLocation={toLocation}
+            setToLocation={setToLocation}
+            showRoute={showRoute}
+            travelMode={travelMode}
+            activeCampus={activeCampus}
+          />
+        </div>
       </div>
       
       <MobileNav activeTab={activeTab} setActiveTab={setActiveTab} />

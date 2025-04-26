@@ -5,18 +5,14 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type { LatLngExpression, DivIcon } from "leaflet";
 
-// Fix Leaflet's default icon path issues
-import icon from "leaflet/dist/images/marker-icon.png";
-import iconShadow from "leaflet/dist/images/marker-shadow.png";
-
-let DefaultIcon = L.icon({
-  iconUrl: icon,
-  shadowUrl: iconShadow,
+// Fix icon issues by creating our own icon for the markers
+const defaultIcon = L.icon({
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
   iconSize: [25, 41],
   iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
 });
-
-L.Marker.prototype.options.icon = DefaultIcon;
 
 interface MapProps {
   selectedLocation: Location | null;
