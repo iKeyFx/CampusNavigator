@@ -1,7 +1,22 @@
 import React, { useState, useEffect, useRef } from "react";
-import InfoWindow from "./InfoWindow";
 import { Location } from "@/data/locations";
-import useGoogleMaps from "@/hooks/useGoogleMaps";
+import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+import type { LatLngExpression, DivIcon } from "leaflet";
+
+// Fix Leaflet's default icon path issues
+import icon from "leaflet/dist/images/marker-icon.png";
+import iconShadow from "leaflet/dist/images/marker-shadow.png";
+
+let DefaultIcon = L.icon({
+  iconUrl: icon,
+  shadowUrl: iconShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+});
+
+L.Marker.prototype.options.icon = DefaultIcon;
 
 interface MapProps {
   selectedLocation: Location | null;
@@ -13,6 +28,15 @@ interface MapProps {
   activeCampus: "gidan-kwano" | "bosso";
 }
 
+// A component to recenter the map when active campus changes
+const ChangeView = ({ center, zoom }: { center: [number, number]; zoom: number }) => {
+  const map = useMap();
+  useEffect(() => {
+    map.flyTo(center, zoom, { duration: 1 });
+  }, [center, zoom, map]);
+  return null;
+};
+
 const Map: React.FC<MapProps> = ({
   selectedLocation,
   setSelectedLocation,
@@ -22,186 +46,173 @@ const Map: React.FC<MapProps> = ({
   travelMode,
   activeCampus
 }) => {
-  const mapRef = useRef<HTMLDivElement>(null);
-  const [map, setMap] = useState<google.maps.Map | null>(null);
-  const [markers, setMarkers] = useState<google.maps.Marker[]>([]);
-  const [infoWindow, setInfoWindow] = useState<google.maps.InfoWindow | null>(null);
-  const [directionsRenderer, setDirectionsRenderer] = useState<google.maps.DirectionsRenderer | null>(null);
-  const [displayedLocation, setDisplayedLocation] = useState<Location | null>(null);
-  
-  const { isLoaded, loadError } = useGoogleMaps();
-
   // Center coordinates for each campus
   const campusCoordinates = {
-    'gidan-kwano': { lat: 9.5236, lng: 6.4500 }, // Gidan Kwano campus coordinates
-    'bosso': { lat: 9.6766, lng: 6.5464 }  // Bosso campus coordinates
+    'gidan-kwano': [9.5236, 6.4500] as [number, number], // Gidan Kwano campus coordinates
+    'bosso': [9.6766, 6.5464] as [number, number]  // Bosso campus coordinates
   };
 
-  // Initialize map
-  useEffect(() => {
-    if (!isLoaded || loadError || !mapRef.current) return;
+  // Create a basic straight-line route for demonstration
+  const routePoints = (fromLocation && toLocation) ? [
+    [fromLocation.lat, fromLocation.lng], 
+    [toLocation.lat, toLocation.lng]
+  ] : [];
 
-    const initialCenter = campusCoordinates[activeCampus];
+  // Get all locations for the active campus from props
+  // This would normally come from locations.ts
+  const [filteredLocations, setFilteredLocations] = useState<Location[]>([]);
+
+  // Custom marker icons based on location category
+  const getCategoryIcon = (category: string) => {
+    let iconUrl;
+    let iconColor = '#4F46E5'; // primary color
     
-    const mapOptions: google.maps.MapOptions = {
-      zoom: 16,
-      center: initialCenter,
-      mapTypeId: google.maps.MapTypeId.ROADMAP,
-      fullscreenControl: false,
-      mapTypeControl: false,
-      streetViewControl: false,
-      zoomControl: true,
-      zoomControlOptions: {
-        position: google.maps.ControlPosition.RIGHT_TOP
-      }
-    };
-
-    const newMap = new google.maps.Map(mapRef.current, mapOptions);
-    setMap(newMap);
-
-    // Create InfoWindow instance
-    const newInfoWindow = new google.maps.InfoWindow({
-      maxWidth: 320
-    });
-    setInfoWindow(newInfoWindow);
-
-    // Create directions renderer
-    const newDirectionsRenderer = new google.maps.DirectionsRenderer({
-      suppressMarkers: true,
-      polylineOptions: {
-        strokeColor: "#4F46E5",
-        strokeWeight: 5,
-        strokeOpacity: 0.7
-      }
-    });
-    newDirectionsRenderer.setMap(newMap);
-    setDirectionsRenderer(newDirectionsRenderer);
-
-    return () => {
-      // Clean up (if needed)
-    };
-  }, [isLoaded, loadError, activeCampus]);
-
-  // Update map center when campus changes
-  useEffect(() => {
-    if (!map) return;
-    
-    map.setCenter(campusCoordinates[activeCampus]);
-    map.setZoom(16);
-  }, [activeCampus, map]);
-
-  // Handle selected location (from search or places panel)
-  useEffect(() => {
-    if (!map || !selectedLocation) return;
-    
-    setDisplayedLocation(selectedLocation);
-    
-    map.setCenter({
-      lat: selectedLocation.lat,
-      lng: selectedLocation.lng
-    });
-    map.setZoom(18);
-  }, [selectedLocation, map]);
-
-  // Close InfoWindow when displayed location changes
-  useEffect(() => {
-    if (infoWindow) {
-      infoWindow.close();
+    switch(category) {
+      case 'Academic Building':
+        return L.divIcon({
+          html: `<i class="fas fa-building" style="color: ${iconColor}; font-size: 18px;"></i>`,
+          className: 'custom-div-icon',
+          iconSize: [30, 30],
+          iconAnchor: [15, 15],
+        });
+      case 'Hostel':
+        return L.divIcon({
+          html: `<i class="fas fa-bed" style="color: ${iconColor}; font-size: 18px;"></i>`,
+          className: 'custom-div-icon',
+          iconSize: [30, 30],
+          iconAnchor: [15, 15],
+        });
+      case 'Food':
+        return L.divIcon({
+          html: `<i class="fas fa-utensils" style="color: ${iconColor}; font-size: 18px;"></i>`,
+          className: 'custom-div-icon',
+          iconSize: [30, 30],
+          iconAnchor: [15, 15],
+        });
+      case 'Services':
+        return L.divIcon({
+          html: `<i class="fas fa-concierge-bell" style="color: ${iconColor}; font-size: 18px;"></i>`,
+          className: 'custom-div-icon',
+          iconSize: [30, 30],
+          iconAnchor: [15, 15],
+        });
+      case 'Administrative':
+        return L.divIcon({
+          html: `<i class="fas fa-landmark" style="color: ${iconColor}; font-size: 18px;"></i>`,
+          className: 'custom-div-icon',
+          iconSize: [30, 30],
+          iconAnchor: [15, 15],
+        });
+      default:
+        return L.divIcon({
+          html: `<i class="fas fa-map-marker-alt" style="color: ${iconColor}; font-size: 18px;"></i>`,
+          className: 'custom-div-icon',
+          iconSize: [30, 30],
+          iconAnchor: [15, 15],
+        });
     }
-  }, [displayedLocation, infoWindow]);
-
-  // Draw route when fromLocation and toLocation are set and showRoute is true
-  useEffect(() => {
-    if (!map || !directionsRenderer || !fromLocation || !toLocation || !showRoute) return;
-    
-    const directionsService = new google.maps.DirectionsService();
-    
-    directionsService.route({
-      origin: { lat: fromLocation.lat, lng: fromLocation.lng },
-      destination: { lat: toLocation.lat, lng: toLocation.lng },
-      travelMode: travelMode === 'WALKING' ? google.maps.TravelMode.WALKING : google.maps.TravelMode.DRIVING,
-    }, (result, status) => {
-      if (status === google.maps.DirectionsStatus.OK && result) {
-        directionsRenderer.setDirections(result);
-        
-        // Fit bounds to show the entire route
-        const bounds = new google.maps.LatLngBounds();
-        bounds.extend({ lat: fromLocation.lat, lng: fromLocation.lng });
-        bounds.extend({ lat: toLocation.lat, lng: toLocation.lng });
-        map.fitBounds(bounds);
-      }
-    });
-    
-    // Clean up function
-    return () => {
-      directionsRenderer.setDirections({ routes: [] } as google.maps.DirectionsResult);
-    };
-  }, [fromLocation, toLocation, showRoute, travelMode, map, directionsRenderer]);
-
-  // Handle location selection for directions
-  const handleGetDirections = (location: Location) => {
-    setSelectedLocation(null);
-    setToLocation(location);
-    
-    // If fromLocation is not set, set it to "Your location"
-    if (!fromLocation) {
-      // Find the main gate or another default location as the starting point
-      const mainGate = { id: "your-location", name: "Your Location", lat: location.lat - 0.001, lng: location.lng - 0.001 } as Location;
-      setFromLocation(mainGate);
-    }
-    
-    setShowRoute(true);
   };
+
+  // Filter locations based on active campus
+  useEffect(() => {
+    import("@/data/locations").then(module => {
+      const locations = module.locations;
+      setFilteredLocations(locations.filter(loc => loc.campus === activeCampus));
+    });
+  }, [activeCampus]);
+
+  // Focus the map on selected location
+  const [mapCenter, setMapCenter] = useState<[number, number]>(campusCoordinates[activeCampus]);
+  const [mapZoom, setMapZoom] = useState(16);
+
+  useEffect(() => {
+    setMapCenter(campusCoordinates[activeCampus]);
+    setMapZoom(16);
+  }, [activeCampus]);
+
+  useEffect(() => {
+    if (selectedLocation) {
+      setMapCenter([selectedLocation.lat, selectedLocation.lng]);
+      setMapZoom(18);
+    }
+  }, [selectedLocation]);
 
   return (
-    <div className="flex-grow relative">
-      <div className="map-container relative">
-        {!isLoaded && (
-          <div className="w-full h-full flex items-center justify-center bg-gray-100">
-            <div className="text-xl text-gray-600">Loading map...</div>
-          </div>
-        )}
-        
-        {loadError && (
-          <div className="w-full h-full flex items-center justify-center bg-gray-100">
-            <div className="max-w-md text-center p-8">
-              <div className="text-2xl text-red-500 mb-4">
-                <i className="fas fa-exclamation-triangle text-4xl mb-4 block"></i>
-                Map Loading Error
-              </div>
-              <p className="text-gray-700 mb-4">
-                We're having trouble loading Google Maps. This may be due to:
-              </p>
-              <ul className="text-left text-gray-600 mb-4 space-y-2">
-                <li><i className="fas fa-check-circle text-primary mr-2"></i> Billing not being enabled for this API key</li>
-                <li><i className="fas fa-check-circle text-primary mr-2"></i> API restrictions on the Google Cloud Console</li>
-                <li><i className="fas fa-check-circle text-primary mr-2"></i> Network connectivity issues</li>
-              </ul>
-              <p className="text-gray-700">
-                Please check your Google Cloud Console settings to ensure Maps JavaScript API is enabled and billing is properly configured.
-              </p>
-            </div>
-          </div>
-        )}
-        
-        <div id="map" ref={mapRef} className="w-full h-full bg-gray-200"></div>
-        
-        {/* Map controls */}
-        {isLoaded && !loadError && (
-          <div className="absolute bottom-4 right-4 flex flex-col space-y-2">
-            <button 
-              className="w-10 h-10 bg-white rounded-full shadow-md flex items-center justify-center hover:bg-gray-100"
-              onClick={() => {
-                if (map) {
-                  map.setCenter(campusCoordinates[activeCampus]);
-                  map.setZoom(16);
-                }
+    <div className="flex-grow relative h-full">
+      <div className="w-full h-full">
+        <MapContainer 
+          center={mapCenter} 
+          zoom={mapZoom} 
+          style={{ height: '100%', width: '100%' }}
+          zoomControl={false}
+        >
+          <ChangeView center={mapCenter} zoom={mapZoom} />
+          
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+          
+          {/* Display markers for all filtered locations */}
+          {filteredLocations.map(location => (
+            <Marker 
+              key={location.id}
+              position={[location.lat, location.lng]}
+              icon={getCategoryIcon(location.category)}
+              eventHandlers={{
+                click: () => setSelectedLocation(location)
               }}
             >
-              <i className="fas fa-location-arrow text-gray-600"></i>
-            </button>
-          </div>
-        )}
+              <Popup>
+                <div className="p-1">
+                  <h3 className="font-medium text-base">{location.name}</h3>
+                  <p className="text-sm text-gray-600">{location.description}</p>
+                  <div className="mt-2">
+                    <button 
+                      className="text-primary text-sm font-medium flex items-center"
+                      onClick={() => {
+                        // Handle directions
+                        if (fromLocation) {
+                          // Set as destination
+                          setSelectedLocation(null);
+                          setToLocation(location);
+                        } else {
+                          // First selection, set as starting point
+                          setFromLocation(location);
+                        }
+                      }}
+                    >
+                      <i className="fas fa-directions mr-1"></i> Directions
+                    </button>
+                  </div>
+                </div>
+              </Popup>
+            </Marker>
+          ))}
+          
+          {/* Draw route line if showRoute is true */}
+          {showRoute && fromLocation && toLocation && (
+            <Polyline 
+              positions={[[fromLocation.lat, fromLocation.lng], [toLocation.lat, toLocation.lng]]} 
+              color="#4F46E5"
+              weight={5}
+              opacity={0.7}
+            />
+          )}
+        </MapContainer>
+      </div>
+      
+      {/* Map controls */}
+      <div className="absolute bottom-4 right-4 flex flex-col space-y-2 z-[1000]">
+        <button 
+          className="w-10 h-10 bg-white rounded-full shadow-md flex items-center justify-center hover:bg-gray-100"
+          onClick={() => {
+            setMapCenter(campusCoordinates[activeCampus]);
+            setMapZoom(16);
+          }}
+        >
+          <i className="fas fa-location-arrow text-gray-600"></i>
+        </button>
       </div>
     </div>
   );

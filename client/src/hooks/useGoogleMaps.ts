@@ -12,6 +12,8 @@ declare global {
 const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "YOUR_API_KEY";
 const GOOGLE_MAPS_URL = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}&libraries=places&v=weekly`;
 
+// const GOOGLE_MAPS_URL = `https://www.google.com/maps/embed/v1/place?q=NIGER&key=${API_KEY}`;
+
 // Helper function to load scripts
 const loadScript = (src: string): Promise<void> => {
   return new Promise((resolve, reject) => {
