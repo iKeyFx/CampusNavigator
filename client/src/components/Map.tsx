@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Location } from "@/data/locations";
 import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import type { LatLngExpression, DivIcon } from "leaflet";
+import type { LatLngExpression } from "leaflet";
 
 // Fix icon issues by creating our own icon for the markers
 const defaultIcon = L.icon({
@@ -144,7 +144,8 @@ const Map: React.FC<MapProps> = ({
           center={mapCenter as LatLngExpression} 
           zoom={mapZoom} 
           style={{ height: '100%', width: '100%' }}
-          zoomControl={false}
+          zoomControl={true}
+          className="z-0"
         >
           <ChangeView center={mapCenter} zoom={mapZoom} />
           
@@ -152,6 +153,8 @@ const Map: React.FC<MapProps> = ({
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
+          
+          {/* Leaflet built-in zoom controls - simpler approach */}
           
           {/* Display markers for all filtered locations */}
           {filteredLocations.map(location => (
