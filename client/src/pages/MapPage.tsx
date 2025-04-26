@@ -40,7 +40,9 @@ const MapPage = () => {
           selectedLocation={selectedLocation}
           setSelectedLocation={setSelectedLocation}
           fromLocation={fromLocation}
+          setFromLocation={setFromLocation}
           toLocation={toLocation}
+          setToLocation={setToLocation}
           showRoute={showRoute}
           travelMode={travelMode}
           activeCampus={activeCampus}

@@ -22,7 +22,9 @@ interface MapProps {
   selectedLocation: Location | null;
   setSelectedLocation: (location: Location | null) => void;
   fromLocation: Location | null;
+  setFromLocation: (location: Location | null) => void;
   toLocation: Location | null;
+  setToLocation: (location: Location | null) => void;
   showRoute: boolean;
   travelMode: "WALKING" | "DRIVING";
   activeCampus: "gidan-kwano" | "bosso";
@@ -41,7 +43,9 @@ const Map: React.FC<MapProps> = ({
   selectedLocation,
   setSelectedLocation,
   fromLocation,
+  setFromLocation,
   toLocation,
+  setToLocation,
   showRoute,
   travelMode,
   activeCampus
@@ -141,7 +145,7 @@ const Map: React.FC<MapProps> = ({
     <div className="flex-grow relative h-full">
       <div className="w-full h-full">
         <MapContainer 
-          center={mapCenter} 
+          center={mapCenter as LatLngExpression} 
           zoom={mapZoom} 
           style={{ height: '100%', width: '100%' }}
           zoomControl={false}
@@ -157,7 +161,7 @@ const Map: React.FC<MapProps> = ({
           {filteredLocations.map(location => (
             <Marker 
               key={location.id}
-              position={[location.lat, location.lng]}
+              position={[location.lat, location.lng] as LatLngExpression}
               icon={getCategoryIcon(location.category)}
               eventHandlers={{
                 click: () => setSelectedLocation(location)
@@ -193,10 +197,11 @@ const Map: React.FC<MapProps> = ({
           {/* Draw route line if showRoute is true */}
           {showRoute && fromLocation && toLocation && (
             <Polyline 
-              positions={[[fromLocation.lat, fromLocation.lng], [toLocation.lat, toLocation.lng]]} 
-              color="#4F46E5"
-              weight={5}
-              opacity={0.7}
+              positions={[
+                [fromLocation.lat, fromLocation.lng] as LatLngExpression, 
+                [toLocation.lat, toLocation.lng] as LatLngExpression
+              ]} 
+              pathOptions={{ color: "#4F46E5", weight: 5, opacity: 0.7 }}
             />
           )}
         </MapContainer>
